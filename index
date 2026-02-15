@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>East Central Missouri Sports – Media Wall</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#0f141b;
+    color:white;
+}
+
+header {
+    padding:20px;
+    text-align:center;
+    background:#111820;
+    border-bottom:1px solid #222;
+}
+
+h1 {
+    margin:0;
+    font-size:20px;
+    letter-spacing:1px;
+}
+
+.loader {
+    padding:20px;
+    text-align:center;
+    background:#141c26;
+    border-bottom:1px solid #222;
+}
+
+input {
+    width:60%;
+    max-width:400px;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    font-size:14px;
+    margin-bottom:10px;
+}
+
+button {
+    padding:12px 18px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    background:#ff3b3b;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover {
+    background:#ff1f1f;
+}
+
+.wall {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap:20px;
+    padding:20px;
+}
+
+.card {
+    background:#18212c;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+
+.card-content {
+    padding:12px;
+}
+
+.card-title {
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+iframe {
+    width:100%;
+    aspect-ratio:16/9;
+    border:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>East Central Missouri Sports – Media Wall</h1>
+</header>
+
+<div class="loader">
+    <div>
+        <input type="text" id="videoUrl" placeholder="Paste YouTube link here...">
+    </div>
+    <div>
+        <input type="text" id="videoTitle" placeholder="Enter video title...">
+    </div>
+    <button onclick="addVideo()">Add Video</button>
+</div>
+
+<div class="wall" id="mediaWall">
+</div>
+
+<script>
+function extractYouTubeID(url) {
+    const regExp = /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+}
+
+function saveVideos() {
+    const videos = [];
+    document.querySelectorAll(".card").forEach(card => {
+        videos.push({
+            id: card.dataset.id,
+            title: card.dataset.title
+        });
+    });
+    localStorage.setItem("ecmoWall", JSON.stringify(videos));
+}
+
+function loadVideos() {
+    const saved = JSON.parse(localStorage.getItem("ecmoWall")) || [];
+    saved.forEach(video => createCard(video.id, video.title, false));
+}
+
+function createCard(videoId, title, prepend = true) {
+    const wall = document.getElementById("mediaWall");
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = videoId;
+    card.dataset.title = title;
+
+    card.innerHTML = `
+        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+        <div class="card-content">
+            <div class="card-title">${title}</div>
+            <button onclick="deleteCard(this)" style="background:#444;">Remove</button>
+        </div>
+    `;
+
+    prepend ? wall.prepend(card) : wall.appendChild(card);
+
+    saveVideos();
+}
+
+function addVideo() {
+    const url = document.getElementById("videoUrl").value.trim();
+    const title = document.getElementById("videoTitle").value.trim();
+    const videoId = extractYouTubeID(url);
+
+    if (!videoId) {
+        alert("Invalid YouTube URL");
+        return;
+    }
+
+    if (!title) {
+        alert("Please enter a title");
+        return;
+    }
+
+    createCard(videoId, title);
+
+    document.getElementById("videoUrl").value = "";
+    document.getElementById("videoTitle").value = "";
+}
+
+function deleteCard(button) {
+    button.closest(".card").remove();
+    saveVideos();
+}
+
+loadVideos();
+</script>
+
+</body>
+</html>
