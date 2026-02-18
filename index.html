@@ -1,184 +1,233 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>East Central Missouri Sports – Media Wall</title>
+<title>ECMO Volleyball Scoreboard</title>
 
 <style>
 body {
     margin:0;
     font-family: Arial, sans-serif;
-    background:#0f141b;
+    background:#111;
     color:white;
 }
 
-header {
-    padding:20px;
+/* ================= OBS MODE ================= */
+
+.obs .scoreboard {
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:180px;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 80px;
+    box-sizing:border-box;
+}
+
+.obs .team-name { font-size:36px; }
+.obs .score { font-size:110px; }
+.obs .sets { font-size:20px; }
+.obs .set-label { font-size:26px; }
+
+.obs .controls,
+.obs .name-edit { display:none; }
+
+/* ================= MOBILE MODE ================= */
+
+.mobile .scoreboard {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-top:20px;
+}
+
+.mobile .team {
+    margin:20px 0;
     text-align:center;
-    background:#111820;
-    border-bottom:1px solid #222;
 }
 
-h1 {
-    margin:0;
-    font-size:20px;
-    letter-spacing:1px;
+.mobile .team-name { font-size:28px; }
+.mobile .score { font-size:90px; }
+.mobile .sets { font-size:18px; }
+
+.mobile .set-label {
+    font-size:24px;
+    margin-top:10px;
 }
 
-.loader {
-    padding:20px;
+.name-edit {
+    padding:15px;
     text-align:center;
-    background:#141c26;
-    border-bottom:1px solid #222;
 }
 
-input {
-    width:60%;
-    max-width:400px;
-    padding:12px;
-    border-radius:8px;
+.name-edit input {
+    width:45%;
+    padding:10px;
+    margin:5px;
+    border-radius:6px;
     border:none;
-    font-size:14px;
-    margin-bottom:10px;
+}
+
+.controls {
+    width:100%;
+    position:fixed;
+    bottom:0;
+    background:#000;
+    padding:20px;
+    box-sizing:border-box;
 }
 
 button {
-    padding:12px 18px;
-    margin:5px;
+    width:30%;
+    padding:14px;
+    margin:6px 1%;
+    font-size:18px;
     border:none;
     border-radius:8px;
-    background:#ff3b3b;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
 }
 
-button:hover {
-    background:#ff1f1f;
+.btnA { background:#1e90ff; }
+.btnB { background:#ff3b3b; }
+.btnNeutral { background:#555; }
+
+.row {
+    display:flex;
+    justify-content:space-between;
 }
 
-.wall {
-    display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap:20px;
-    padding:20px;
-}
+.scoreboard { display:none; }
 
-.card {
-    background:#18212c;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 4px 20px rgba(0,0,0,0.4);
-}
-
-.card-content {
-    padding:12px;
-}
-
-.card-title {
-    font-weight:bold;
-    margin-bottom:10px;
-}
-
-iframe {
-    width:100%;
-    aspect-ratio:16/9;
-    border:none;
-}
 </style>
 </head>
 
 <body>
 
-<header>
-    <h1>East Central Missouri Sports – Media Wall</h1>
-</header>
-
-<div class="loader">
-    <div>
-        <input type="text" id="videoUrl" placeholder="Paste YouTube link here...">
-    </div>
-    <div>
-        <input type="text" id="videoTitle" placeholder="Enter video title...">
-    </div>
-    <button onclick="addVideo()">Add Video</button>
+<div class="name-edit">
+    <input type="text" id="teamANameInput" placeholder="Home Team">
+    <input type="text" id="teamBNameInput" placeholder="Away Team">
+    <button class="btnNeutral" onclick="saveTeamNames()">Save Names</button>
 </div>
 
-<div class="wall" id="mediaWall">
+<div class="scoreboard">
+    <div class="team">
+        <div class="team-name" id="teamAName">HOME</div>
+        <div class="score" id="teamAScore">0</div>
+        <div class="sets">Sets: <span id="teamASets">0</span></div>
+    </div>
+
+    <div class="center">
+        <div class="set-label">SET <span id="currentSet">1</span> / 5</div>
+    </div>
+
+    <div class="team">
+        <div class="team-name" id="teamBName">AWAY</div>
+        <div class="score" id="teamBScore">0</div>
+        <div class="sets">Sets: <span id="teamBSets">0</span></div>
+    </div>
+</div>
+
+<div class="controls">
+    <div class="row">
+        <button class="btnA" onclick="changeScore('A',1)">HOME +1</button>
+        <button class="btnB" onclick="changeScore('B',1)">AWAY +1</button>
+    </div>
+    <div class="row">
+        <button class="btnA" onclick="changeScore('A',-1)">HOME -1</button>
+        <button class="btnB" onclick="changeScore('B',-1)">AWAY -1</button>
+    </div>
+    <div class="row">
+        <button class="btnA" onclick="changeSets('A',1)">HOME +SET</button>
+        <button class="btnB" onclick="changeSets('B',1)">AWAY +SET</button>
+    </div>
+    <div class="row">
+        <button class="btnNeutral" onclick="nextSet()">Next Set</button>
+        <button class="btnNeutral" onclick="resetSets()">Reset Sets</button>
+    </div>
+    <div class="row">
+        <button class="btnNeutral" onclick="resetScores()">Reset Points</button>
+    </div>
 </div>
 
 <script>
-function extractYouTubeID(url) {
-    const regExp = /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
+
+/* Mode Detection */
+if (window.location.search.includes("obs")) {
+    document.body.classList.add("obs");
+} else {
+    document.body.classList.add("mobile");
+}
+document.querySelector(".scoreboard").style.display = "flex";
+
+/* Score State */
+let state = JSON.parse(localStorage.getItem("vbScore")) || {
+    teamA: 0,
+    teamB: 0,
+    setsA: 0,
+    setsB: 0,
+    currentSet: 1,
+    teamAName: "HOME",
+    teamBName: "AWAY"
+};
+
+function updateDisplay() {
+    document.getElementById("teamAScore").innerText = state.teamA;
+    document.getElementById("teamBScore").innerText = state.teamB;
+    document.getElementById("teamASets").innerText = state.setsA;
+    document.getElementById("teamBSets").innerText = state.setsB;
+    document.getElementById("currentSet").innerText = state.currentSet;
+    document.getElementById("teamAName").innerText = state.teamAName;
+    document.getElementById("teamBName").innerText = state.teamBName;
+    localStorage.setItem("vbScore", JSON.stringify(state));
 }
 
-function saveVideos() {
-    const videos = [];
-    document.querySelectorAll(".card").forEach(card => {
-        videos.push({
-            id: card.dataset.id,
-            title: card.dataset.title
-        });
-    });
-    localStorage.setItem("ecmoWall", JSON.stringify(videos));
+function changeScore(team, amount) {
+    if(team === "A") state.teamA = Math.max(0, state.teamA + amount);
+    if(team === "B") state.teamB = Math.max(0, state.teamB + amount);
+    updateDisplay();
 }
 
-function loadVideos() {
-    const saved = JSON.parse(localStorage.getItem("ecmoWall")) || [];
-    saved.forEach(video => createCard(video.id, video.title, false));
+function changeSets(team, amount) {
+    if(team === "A") state.setsA = Math.min(5, state.setsA + amount);
+    if(team === "B") state.setsB = Math.min(5, state.setsB + amount);
+    updateDisplay();
 }
 
-function createCard(videoId, title, prepend = true) {
-    const wall = document.getElementById("mediaWall");
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.dataset.id = videoId;
-    card.dataset.title = title;
-
-    card.innerHTML = `
-        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
-        <div class="card-content">
-            <div class="card-title">${title}</div>
-            <button onclick="deleteCard(this)" style="background:#444;">Remove</button>
-        </div>
-    `;
-
-    prepend ? wall.prepend(card) : wall.appendChild(card);
-
-    saveVideos();
-}
-
-function addVideo() {
-    const url = document.getElementById("videoUrl").value.trim();
-    const title = document.getElementById("videoTitle").value.trim();
-    const videoId = extractYouTubeID(url);
-
-    if (!videoId) {
-        alert("Invalid YouTube URL");
-        return;
+function nextSet() {
+    if(state.currentSet < 5) {
+        state.currentSet++;
+        state.teamA = 0;
+        state.teamB = 0;
+        updateDisplay();
     }
-
-    if (!title) {
-        alert("Please enter a title");
-        return;
-    }
-
-    createCard(videoId, title);
-
-    document.getElementById("videoUrl").value = "";
-    document.getElementById("videoTitle").value = "";
 }
 
-function deleteCard(button) {
-    button.closest(".card").remove();
-    saveVideos();
+function resetScores() {
+    state.teamA = 0;
+    state.teamB = 0;
+    updateDisplay();
 }
 
-loadVideos();
+function resetSets() {
+    state.setsA = 0;
+    state.setsB = 0;
+    state.currentSet = 1;
+    updateDisplay();
+}
+
+function saveTeamNames() {
+    const a = document.getElementById("teamANameInput").value.trim();
+    const b = document.getElementById("teamBNameInput").value.trim();
+    if(a) state.teamAName = a;
+    if(b) state.teamBName = b;
+    updateDisplay();
+}
+
+updateDisplay();
+
 </script>
 
 </body>
