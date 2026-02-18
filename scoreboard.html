@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ECMO Volleyball Scoreboard</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:transparent;
+    color:white;
+}
+
+.scoreboard {
+    width:100%;
+    height:140px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 60px;
+    box-sizing:border-box;
+    background:rgba(0,0,0,0.75);
+}
+
+.team {
+    text-align:center;
+}
+
+.team-name {
+    font-size:26px;
+    font-weight:bold;
+}
+
+.score {
+    font-size:70px;
+    font-weight:bold;
+}
+
+.sets {
+    font-size:18px;
+}
+
+.center {
+    text-align:center;
+}
+
+.set-label {
+    font-size:20px;
+    opacity:0.8;
+}
+
+.controls {
+    position:fixed;
+    bottom:10px;
+    left:10px;
+    background:#111;
+    padding:15px;
+    border-radius:10px;
+}
+
+/* Hide controls in OBS mode */
+.obs .controls {
+    display:none;
+}
+
+button {
+    padding:6px 10px;
+    margin:4px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="scoreboard">
+    <div class="team">
+        <div class="team-name" id="teamAName">HOME</div>
+        <div class="score" id="teamAScore">0</div>
+        <div class="sets">Sets: <span id="teamASets">0</span></div>
+    </div>
+
+    <div class="center">
+        <div class="set-label">SET <span id="currentSet">1</span></div>
+    </div>
+
+    <div class="team">
+        <div class="team-name" id="teamBName">AWAY</div>
+        <div class="score" id="teamBScore">0</div>
+        <div class="sets">Sets: <span id="teamBSets">0</span></div>
+    </div>
+</div>
+
+<div class="controls">
+    <div>
+        <strong>HOME</strong><br>
+        <button onclick="changeScore('A',1)">+1</button>
+        <button onclick="changeScore('A',-1)">-1</button>
+        <button onclick="changeSets('A',1)">+ Set</button>
+    </div>
+    <div>
+        <strong>AWAY</strong><br>
+        <button onclick="changeScore('B',1)">+1</button>
+        <button onclick="changeScore('B',-1)">-1</button>
+        <button onclick="changeSets('B',1)">+ Set</button>
+    </div>
+    <div>
+        <button onclick="nextSet()">Next Set</button>
+        <button onclick="resetScores()">Reset Scores</button>
+    </div>
+</div>
+
+<script>
+
+// Enable OBS mode via URL parameter ?obs
+if (window.location.search.includes("obs")) {
+    document.body.classList.add("obs");
+}
+
+let state = JSON.parse(localStorage.getItem("vbScore")) || {
+    teamA: 0,
+    teamB: 0,
+    setsA: 0,
+    setsB: 0,
+    currentSet: 1
+};
+
+function updateDisplay() {
+    document.getElementById("teamAScore").innerText = state.teamA;
+    document.getElementById("teamBScore").innerText = state.teamB;
+    document.getElementById("teamASets").innerText = state.setsA;
+    document.getElementById("teamBSets").innerText = state.setsB;
+    document.getElementById("currentSet").innerText = state.currentSet;
+    localStorage.setItem("vbScore", JSON.stringify(state));
+}
+
+function changeScore(team, amount) {
+    if(team === "A") state.teamA = Math.max(0, state.teamA + amount);
+    if(team === "B") state.teamB = Math.max(0, state.teamB + amount);
+    updateDisplay();
+}
+
+function changeSets(team, amount) {
+    if(team === "A") state.setsA += amount;
+    if(team === "B") state.setsB += amount;
+    updateDisplay();
+}
+
+function nextSet() {
+    state.currentSet += 1;
+    state.teamA = 0;
+    state.teamB = 0;
+    updateDisplay();
+}
+
+function resetScores() {
+    state.teamA = 0;
+    state.teamB = 0;
+    updateDisplay();
+}
+
+updateDisplay();
+
+</script>
+
+</body>
+</html>
